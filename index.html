@@ -310,17 +310,6 @@
       <!--/ Abstract. -->
 
       <!-- Paper video. -->
-      <!-- <div class="columns is-centered has-text-centered">
-      <div class="column is-four-fifths">
-        <h2 class="title is-3">3 Source Evidence</h2>
-        <div class="publication-video">
-          <img src="./static/images/chimp_main.png" alt="Project teaser" style="width:100%; max-width:720px; border-radius: 8px;">
-        </div>
-      </div>
-    </div> -->
-      <!--/ Paper video. -->
-
-      <!-- Paper video. -->
       <!-- <div class="columns is-centered has-text-centered" style="margin-bottom: 2rem;"></div> -->
       <div class="columns is-centered has-text-centered" style="overflow: visible;">
         <div class="column is-full" style="overflow: visible;">
@@ -345,6 +334,175 @@
       </div>
       <!-- </div>   -->
       <!--/ Paper video. -->
+
+      <div class="columns is-centered has-text-centered" style="overflow: visible;">
+        <div class="column is-full" style="overflow: visible;">
+          <!-- 標題 -->
+          <h2 class="title is-3" style="margin-bottom: 1.5rem;">
+            The Complete Map of Core Cognitive Functions Across Species
+          </h2>
+
+          <!-- 外層保持和圖片版本一致 -->
+          <div style="
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: visible;
+      margin-top: 2rem;
+      margin-bottom: 2rem;
+      width: 100%;
+    ">
+            <!-- ECharts 容器 -->
+            <div id="mindmap" style="
+        width: 100%;
+        max-width: 1100px;
+        height: 820px;
+        border-radius: 0;
+        display: block;
+        flex: 1 1 100%;
+      "></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ECharts -->
+      <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+      <script>
+        /* 1) 顏色定義 */
+        const palette = {
+          culture: '#6C63FF', coop: '#2AC3FF', social: '#4F83CC',
+          power: '#EF9A9A', morality: '#F48FB1', universal: '#CE93D8'
+        };
+
+        /* 2) 資料 */
+        const data = {
+          name: '',
+          children: [
+            {
+              name: '1. Culture and Learning', _color: palette.culture, children: [
+                { name: 'Tool Use' }, { name: 'Social Learning' }, { name: 'Cultural Transmission' }, { name: 'Group-Specific Traditions' }
+              ]
+            },
+            {
+              name: '2. Cooperation and Joint Action', _color: palette.coop, children: [
+                { name: 'Reciprocity' }, { name: 'Joint Cooperation' }, { name: 'Hunting' }, { name: 'Future-Oriented Planning' }
+              ]
+            },
+            {
+              name: '3. Social and Goal Inference', _color: palette.social, children: [
+                { name: 'Gesture Communication' }, { name: 'Basic Theory of Mind' }, { name: 'Goal Inference' }, { name: 'Deception and Manipulation' }
+              ]
+            },
+            {
+              name: '4. Power and Politics', _color: palette.power, children: [
+                { name: 'Power and Dominance' }, { name: 'Coalition Building' }, { name: 'Conflict' }, { name: 'Intergroup Hostility' }
+              ]
+            },
+            {
+              name: '5. Morality and Fairness', _color: palette.morality, children: [
+                { name: 'Spontaneous Altruism and Helping' }, { name: 'Empathy' }, { name: 'Fairness and Inequity Aversion' }, { name: 'Reconciliation and Repair' }
+              ]
+            },
+            {
+              name: '6. Cross-Species Universals', _color: palette.universal, children: [
+                { name: 'Basic Drives and Preferences' }, { name: 'Reproductive Behavior' }, { name: 'Emotion' }, { name: 'Memory' }
+              ]
+            }
+          ]
+        };
+
+        /* 3) 換行函式 */
+        function wrapLabel(s, max = 16) {
+          const words = String(s).split(' ');
+          const out = []; let cur = '';
+          for (const w of words) {
+            if ((cur + ' ' + w).trim().length > max) {
+              out.push(cur.trim());
+              cur = w;
+            } else {
+              cur += ' ' + w;
+            }
+          }
+          if (cur) out.push(cur.trim());
+          return out.join('\n');
+        }
+
+        /* 4) 套用顏色到整個分支 */
+        function colorizeAndWrap(node, inherited = '#BCCCDC') {
+          const color = node._color || inherited;
+          const out = {
+            name: wrapLabel(node.name || ''),
+            itemStyle: { color },
+            lineStyle: { color, width: 2 }
+          };
+          if (node.children) out.children = node.children.map(ch => colorizeAndWrap(ch, color));
+          return out;
+        }
+        const treeData = colorizeAndWrap(data);
+
+        /* 5) 深色模式標籤背景 */
+        const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const labelBg = isDark ? 'rgba(17,24,39,0.95)' : 'rgba(255,255,255,0.95)';
+
+        /* 6) 初始化圖表 */
+        function renderChart() {
+          const el = document.getElementById('mindmap');
+          if (!el) return;
+          const chart = echarts.init(el, null, { renderer: 'svg' });
+          chart.setOption({
+            backgroundColor: 'transparent',
+            series: [{
+              type: 'tree',
+              data: [treeData],
+              layout: 'radial',
+              top: '6%', bottom: '6%', left: '8%', right: '8%',
+              roam: false,
+              initialTreeDepth: -1,
+              nodePadding: 32,
+              symbol: 'circle',
+              symbolSize: 7,
+              animationDuration: 400,
+              // 淡化背景線
+              lineStyle: { curveness: 0.5, color: '#cbd5e1', opacity: 0.7, width: 2 },
+              // 節點標籤
+              label: {
+                rotate: 'radial',
+                distance: 10,
+                align: 'center',
+                verticalAlign: 'middle',
+                fontSize: 14,
+                fontWeight: 900,           // 全加粗
+                lineHeight: 18,
+                color: isDark ? '#F9FAFB' : '#111827',
+                backgroundColor: labelBg, // 背景色遮線
+                padding: [2, 6],
+                borderRadius: 4,
+                fontFamily: 'Inter, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
+              },
+              // 葉節點標籤
+              leaves: {
+                label: {
+                  fontSize: 13,
+                  lineHeight: 16,
+                  fontWeight: 900,
+                  color: isDark ? '#E5E7EB' : '#374151',
+                  backgroundColor: labelBg,
+                  padding: [2, 6],
+                  borderRadius: 4,
+                  fontFamily: 'Inter, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
+                }
+              }
+            }]
+          });
+          window.addEventListener('resize', () => chart.resize());
+        }
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', renderChart);
+        } else {
+          renderChart();
+        }
+      </script>
 
       <div class="columns is-centered has-text-centered">
         <div class="column is-four-fifths">
